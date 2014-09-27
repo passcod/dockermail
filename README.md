@@ -1,4 +1,34 @@
-dockermail
+# Dockermail
+
+_A mail server in a box, **reloaded**._
+
+Because why not.
+
+## Building
+
+```bash
+git clone git://github.com/passcod/dockermail.git
+cd dockermail
+cd dovecot
+docker build -t dovecot .
+cd ..
+```
+
+## Using
+
+```bash
+docker run -dv `pwd`/config:/config --rm dovecot
+cd config
+
+# Modify configuration, then restart container
+
+# If you want to save those emails apart from IMAP:
+docker run -dv `pwd`/config:/config -v /some/path:/srv/vmail --rm dovecot
+```
+
+***
+
+old readme
 ==========
 
 A mail server in a box.

@@ -1,0 +1,4 @@
+#!/bin/bash
+/setup
+postfix start
+dovecot -F &

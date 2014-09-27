@@ -1,0 +1,33 @@
+#!/bin/bash
+
+lnk() { rm -f "$2"; ln -s "$1" "$2"; }
+
+if [[ ! -s /config/dovecot.pem ]]; then
+  openssl req -new -x509 -days 365 -nodes \
+    -out /config/dovecot.pem \
+    -keyout /config/dovecot.key \
+    -subj "/C=NZ/ST=Northland/L=Moerewa/O=IT/CN=example.com"
+fi
+
+lnk /config/aliases /etc/postfix/virtual
+lnk /config/domains /etc/postfix/virtual-mailbox-domains
+lnk /config/dovecot.key /etc/dovecot/dovecot.key
+lnk /config/dovecot.pem /etc/dovecot/dovecot.pem
+lnk /config/mailname /etc/mailname
+lnk /config/passwords /etc/dovecot/passwd
+
+cat /etc/postfix/master-additional.cf >> /etc/postfix/master.cf
+
+awk < /etc/postfix/virtual '{ print $2 }' > /tmp/receivers
+sed -r 's,(.+)@(.+),\2/\1/,' /tmp/receivers > /tmp/folders
+paste /tmp/receivers /tmp/folders > /etc/postfix/virtual-mailbox-maps
+
+#chown -R postfix:postfix /etc/postfix
+
+postmap /etc/postfix/virtual
+postmap /etc/postfix/virtual-mailbox-maps
+
+groupadd -g 500 vmail
+useradd -g vmail -u 500 vmail -d /srv/vmail -m
+chown -R vmail:vmail /srv/vmail
+chmod u+w /srv/vmail
